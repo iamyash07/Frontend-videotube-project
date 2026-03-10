@@ -1,4 +1,4 @@
-// pages/VideoPage.jsx
+
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
@@ -65,6 +65,8 @@ const VideoPage = () => {
         setLoading(true);
         const res = await getVideoById(videoId);
         setVideo(res.data.data);
+        // Debug: Check what the thumbnail structure actually looks like
+        console.log("Video Data:", res.data.data); 
       } catch (error) {
         addToast(getErrorMessage(error), "error");
         navigate("/");
@@ -243,6 +245,12 @@ const VideoPage = () => {
 
   const isOwner = user?._id === video.owner?._id;
 
+  // --- FIX: Safely extract thumbnail string ---
+  const thumbnailPoster = 
+    video.thumbnail?.url || 
+    video.thumbnail?.secure_url || 
+    (typeof video.thumbnail === 'string' ? video.thumbnail : "");
+
   return (
     <MainLayout>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -252,7 +260,7 @@ const VideoPage = () => {
           <div className="clay-card-no-hover overflow-hidden">
             <VideoPlayer
               src={getVideoStreamUrl(videoId)}
-              poster={video.thumbnail?.url || video.thumbnail}
+              poster={thumbnailPoster} /* <--- Updated to use safe variable */
               title={video.title}
               onEnded={() => console.log("Video ended")}
             />
