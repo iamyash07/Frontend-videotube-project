@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "/api/v1",
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -27,14 +27,13 @@ API.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const res = await axios.post(
-          "/api/v1/users/refresh-token",
-          {},
-          { withCredentials: true }
-        );
+        const res = await API.post("/users/refresh-token");
+
         const { accessToken } = res.data.data;
         localStorage.setItem("accessToken", accessToken);
+
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
         return API(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem("accessToken");
@@ -42,6 +41,7 @@ API.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   }
 );
